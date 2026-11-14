@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="color-scheme" content="dark"><title>Neko Code Studio</title>
+<style>
+:root{--bg:#0d0f1a;--bg2:#141829;--bg3:#1c2138;--bd:#2a3150;--tx:#e6e9f5;--mu:#8b93b5;--pu:#a78bfa;--bl:#60a5fa;--cy:#22d3ee;--er:#f87171;--wa:#fbbf24;--fs:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:var(--vh,100dvh);padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font:inherit;color:inherit;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;min-height:40px;min-width:40px;padding:0 10px;cursor:pointer;transition:filter .15s}
+button:active{filter:brightness(1.4)}
+button.pri{background:linear-gradient(135deg,var(--pu),var(--bl));color:#0d0f1a;border:0;font-weight:700}
+button.on{border-color:var(--cy);color:var(--cy)}
+.grow{flex:1}.mu{color:var(--mu);padding:10px}small{color:var(--mu)}
+header,.tb,nav,.dh{display:flex;gap:6px;align-items:center;padding:6px;background:var(--bg2);border-bottom:1px solid var(--bd)}
+header #pn{text-align:left;display:flex;flex-direction:column;justify-content:center;line-height:1.2;min-width:0;overflow:hidden}
+#pt{background:linear-gradient(90deg,var(--pu),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent}
+#st{font-size:11px}#st.w{color:var(--wa)}
+#main{flex:1;display:flex;flex-direction:column;min-height:0}
+#edp,#pv{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column}
+#edp{border-bottom:1px solid var(--bd)}
+[data-mode=editor] #pv,[data-mode=preview] #edp{display:none}
+#tabs{display:flex;overflow-x:auto;background:var(--bg2);min-height:38px}
+.tab{display:flex;align-items:center;gap:6px;padding:0 4px 0 12px;white-space:nowrap;border-right:1px solid var(--bd);color:var(--mu);cursor:pointer}
+.tab.act{color:var(--tx);background:var(--bg);box-shadow:inset 0 -2px var(--pu)}
+.tab b{padding:8px 10px;font-weight:400}
+#ed{flex:1;min-height:0;position:relative;background:var(--bg)}
+#ed .cm-editor{height:100%;font-size:var(--fs)}#ed .cm-scroller{overflow:auto}
+.ta{position:absolute;inset:0;width:100%;height:100%;background:var(--bg);color:var(--tx);border:0;resize:none;padding:10px;font:var(--fs)/1.5 ui-monospace,monospace;tab-size:2;outline:0;white-space:pre;overflow:auto}
+#stage{flex:1;min-height:0;display:flex;justify-content:center;background:#05060c;overflow:auto}
+#fr{border:0;background:#fff;width:var(--fw,100%);max-width:100%;height:100%}
+#pv.full{position:fixed;inset:0;z-index:40;background:var(--bg);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#con{display:none;flex-direction:column;height:34%;background:#090b14;border-top:1px solid var(--bd)}
+#con.open{display:flex}
+#lg{flex:1;overflow:auto;padding:6px 8px;font:12px/1.45 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all}
+.l-error{color:var(--er)}.l-warn{color:var(--wa)}.l-sys{color:var(--cy)}.l-log,.l-info,.l-debug{color:var(--tx)}
+#lg div{border-bottom:1px solid #ffffff0d;padding:2px 0}
+nav{border-top:1px solid var(--bd);border-bottom:0}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;line-height:1.1;position:relative;min-height:46px}
+nav small{font-size:10px}nav i{position:absolute;top:2px;right:18%;background:var(--er);color:#fff;border-radius:9px;font:700 10px/16px sans-serif;min-width:16px;text-align:center;font-style:normal}
+nav i:empty{display:none}
+@media(min-aspect-ratio:1/1){#main{flex-direction:row}#edp{border-bottom:0;border-right:1px solid var(--bd)}}
+
+#dr{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);transform:translateX(-100%);transition:transform .2s;z-index:30;background:var(--bg2);display:flex;flex-direction:column;border-right:1px solid var(--bd)}
+body.dro #dr{transform:none}#bk{display:none;position:fixed;inset:0;background:#0009;z-index:25}body.dro #bk{display:block}
+#tr{flex:1;overflow:auto}.row{display:flex;align-items:center;gap:4px;min-height:44px;padding-right:4px;cursor:pointer}
+.row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row.act{background:var(--bg3)}.row.sel{outline:1px solid var(--cy)}
+.row button{border:0;background:none;min-width:36px;padding:0}
+dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--bd);border-radius:14px;padding:0;width:min(92vw,420px);max-height:86dvh}
+dialog::backdrop{background:#000a}dialog[open]{display:flex;flex-direction:column}
+.dh{justify-content:space-between;border-radius:14px 14px 0 0}.db{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px;line-height:1.5}
+.db label{display:flex;align-items:center;justify-content:space-between;gap:10px}.db input[type=number]{width:80px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px}
+.db input[type=checkbox]{width:22px;height:22px}.pr{display:flex;gap:6px}.pr button:first-child{flex:1;text-align:left}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--pu);padding:10px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;max-width:90vw}
+#toast.on{opacity:1}
+/* ===== v2: compacto + editor próprio ===== */
+button{min-height:32px;min-width:32px;padding:0 8px;border-radius:8px;font-size:13px}
+header{padding:3px 5px;gap:4px}
+header #pn{flex-direction:row;align-items:center;gap:8px;min-height:32px;padding:0 8px}
+#pt{font-size:14px;white-space:nowrap}#st{white-space:nowrap}
+.tb{padding:3px 5px;gap:4px}
+#tabs{min-height:30px}.tab{font-size:12px;padding:0 2px 0 10px}.tab b{padding:5px 9px}
+nav{padding:3px 5px;gap:4px}nav button{flex-direction:row;gap:6px;min-height:34px;font-size:13px}nav small{font-size:12px;color:inherit}nav i{top:-4px;right:6px}
+#dvd{display:none;flex:0 0 22px;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--bg2);border-block:1px solid var(--bd);touch-action:none;cursor:row-resize}
+[data-mode=split] #dvd{display:flex}
+#dvd b{font:700 9px/6px sans-serif;letter-spacing:4px;color:var(--mu);padding-left:4px}
+#dvd i{width:46px;height:4px;border-radius:3px;background:linear-gradient(90deg,var(--pu),var(--cy))}
+body.dg #fr{pointer-events:none}body.dg #dvd i{filter:brightness(1.6)}
+[data-mode=split] #edp{flex:0 0 var(--sp,50%);border:0}[data-mode=split] #pv{flex:1 1 0}
+@media(min-aspect-ratio:1/1){#dvd{flex-direction:row;cursor:col-resize;border-block:0;border-inline:1px solid var(--bd)}#dvd b{writing-mode:vertical-rl;padding:4px 0 0}#dvd i{width:4px;height:46px}}
+#sc{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain}
+#cw{position:relative;min-height:100%;width:100%;--gw:calc(2ch + 18px)}
+body.nw #cw{width:max-content;min-width:100%}
+#pre,#ta{margin:0;font:var(--fs)/var(--lh) ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-ligatures:none;tab-size:2;white-space:pre-wrap;overflow-wrap:break-word;letter-spacing:0}
+body.nw #pre,body.nw #ta{white-space:pre;overflow-wrap:normal}
+#pre{padding:6px 10px 140px 0;counter-reset:l;pointer-events:none;color:var(--tx)}
+.L{position:relative;padding-left:var(--gw);min-height:var(--lh)}
+.L::before{counter-increment:l;content:counter(l);position:absolute;left:0;top:0;width:calc(var(--gw) - 8px);text-align:right;color:#4b5578;user-select:none}
+#ta{position:absolute;inset:0;width:100%;height:100%;padding:6px 10px 140px var(--gw);border:0;outline:0;resize:none;overflow:hidden;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--cy)}
+#ta::selection{background:#a78bfa66}
+#pre i{font-style:normal}#pre .k{color:#c084fc}#pre .s{color:#86efac}#pre .n{color:#fbbf24}#pre .c{color:#6b7394;font-style:italic}#pre .f{color:#60a5fa}#pre .t{color:#22d3ee}#pre .a{color:#93c5fd}#pre .g{color:#f472b6}#pre .l,#pre .r{color:#fb923c}#pre .m{color:#94a3b8}
+#fb{display:none;gap:4px;padding:4px;flex-wrap:wrap;align-items:center;background:var(--bg2);border-bottom:1px solid var(--bd)}#fb.on{display:flex}
+#fb input{flex:1 1 90px;min-width:0;min-height:32px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:0 8px;font-size:13px}
+#xk{display:none;gap:4px;overflow-x:auto;padding:3px 4px;background:var(--bg2);border-top:1px solid var(--bd)}
+#xk button{flex:none;min-width:38px;min-height:34px;font:600 15px ui-monospace,monospace}
+body.kb #xk{display:flex}body.kb nav{display:none}
+#zp{display:none;position:fixed;top:calc(env(safe-area-inset-top) + 4px);right:6px;z-index:45;gap:4px}body.zen #zp{display:flex}
+#zp button{min-height:28px;min-width:28px;padding:0 8px;background:#141829e6;font-size:12px;opacity:.85}
+body.zen header,body.zen nav,body.zen #tabs,body.zen #pv .tb,body.zen #con{display:none!important}
+header #pn{justify-content:flex-start;overflow:hidden;min-width:0}#pt{overflow:hidden;text-overflow:ellipsis;min-width:0}#st{flex:none}
+/* ===== v3: cores e cards ===== */
+:root{--bg:#090b15;--bg2:#10142a;--bg3:#181e3c;--bd:#283058;--pu:#b794ff;--bl:#5ea8ff;--cy:#35e8d8;--tx:#eaedfb;--mu:#8f98bf}
+html,body{background:radial-gradient(120% 70% at 0 0,#171a3a 0,var(--bg) 60%)}
+header{background:linear-gradient(180deg,#1a1f45,#10142a);border-bottom:1px solid #3a4080;box-shadow:0 2px 14px #0008}
+button{background:linear-gradient(180deg,#212852,#171d3e);border:1px solid #343c70;box-shadow:inset 0 1px 0 #ffffff14}
+button.on{background:linear-gradient(180deg,#14404c,#0e2b38);border-color:var(--cy);color:var(--cy);box-shadow:0 0 10px #35e8d833}
+button.pri{background:linear-gradient(135deg,#b794ff,#5ea8ff 60%,#35e8d8);border:0;box-shadow:0 2px 12px #8a6cff66}
+#tabs{background:#0d1127}.tab.act{background:var(--bg);box-shadow:inset 0 -2px var(--pu),inset 0 1px #ffffff10}
+nav,.tb,#dvd,#xk,#ac,#fb{background:linear-gradient(180deg,#141937,#0e1229)}
+#dr{background:linear-gradient(180deg,#151a38,#0d1124);box-shadow:8px 0 30px #000a}
+.row{margin:2px 6px;border-radius:10px}.row.act{background:linear-gradient(90deg,#2a3470,#1a2147);box-shadow:inset 3px 0 var(--pu)}
+dialog{background:linear-gradient(180deg,#1a1f42,#0e1228);border:1px solid #3a4180;border-radius:18px;box-shadow:0 20px 60px #000c}
+dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
+.dh{background:none;font-size:15px;border-bottom:1px solid #2b3260}
+.db>button{text-align:left;min-height:44px;border-radius:12px}
+.pr{position:relative;overflow:hidden;border:1px solid #343c72;border-radius:14px;background:linear-gradient(135deg,#1c2350,#121733);box-shadow:0 4px 14px #0006}
+.pr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--pu),var(--cy))}
+.pr button{background:none;border:0;box-shadow:none;border-radius:0;min-height:52px;padding-left:16px}
+.rw{display:flex;gap:6px}.rw input{flex:1;min-width:0}
+.db input:not([type=checkbox]):not([type=number]){width:100%;min-height:40px;background:#080a16;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:0 10px;font-size:14px}
+#toast{background:linear-gradient(135deg,#252d62,#171d3e);box-shadow:0 8px 24px #000a}
+#ac{display:flex;gap:4px;overflow-x:auto;padding:3px 4px;border-top:1px solid var(--bd)}#ac:empty{display:none}
+#ac button{flex:none;min-height:30px;font:600 13px ui-monospace,monospace;color:var(--cy)}
+</style></head><body>
+<div id="app" data-mode="split">
+<header><button id="bf" aria-label="Arquivos">☰</button><button id="pn" class="grow"><b id="pt">…</b><small id="st"></small></button><button id="br" class="pri" aria-label="Executar">▶ Rodar</button><button id="bz" aria-label="Modo foco">⛶ Foco</button><button id="bm" aria-label="Menu">⋯</button></header>
+<div id="main">
+ <section id="edp"><div id="tabs"></div><div id="fb"></div><div id="ed"></div><div id="ac"></div></section>
+ <div id="dvd" role="separator" aria-label="Arraste para ajustar as telas"><b>•••</b><i></i></div>
+ <section id="pv"><div class="tb"><button id="rr">↻ Reiniciar</button><button id="dv" class="grow">Fluido</button><button id="fs" aria-label="Preview em tela cheia">⤢</button></div><div id="stage"><iframe id="fr" title="Preview"></iframe></div></section>
+</div>
+<section id="con"><div class="tb"><button data-f="all" class="on">Tudo</button><button data-f="warn">Avisos</button><button data-f="error">Erros</button><span class="grow"></span><button id="cc">Limpar</button><button id="cx">✕</button></div><div id="lg"></div></section>
+<nav><button data-m="editor">✏️<small>Editor</small></button><button data-m="split">◧<small>Dividido</small></button><button data-m="preview">▶️<small>Preview</small></button><button id="bc">⌨️<small>Console</small><i id="eb"></i></button></nav><div id="xk"></div>
+</div>
+<div id="zp"><button id="zr">▶</button><button id="zm">◧</button><button id="zx">✕ Foco</button></div>
+<aside id="dr"><div class="dh"><b class="grow">Arquivos</b><button id="nf">＋📄</button><button id="nd">＋📁</button></div><div id="tr"></div></aside><div id="bk"></div>
+<dialog id="dlg"></dialog><div id="toast"></div>
+<input type="file" id="fi" multiple hidden><input type="file" id="fd" webkitdirectory hidden>
+<script type="module">
+const APP_V=1; // aumente a cada versão nova: o app compara esse número para se atualizar sozinho
+const $=(s,r=document)=>r.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TXT=/\.(html?|css|m?js|json|txt|md|svg|xml|glsl|frag|vert|csv)$/i,MT={js:'text/javascript',mjs:'text/javascript',css:'text/css',json:'application/json',html:'text/html',htm:'text/html',svg:'image/svg+xml'};
+const mime=p=>MT[p.split('.').pop().toLowerCase()]||'text/plain';
+const norm=p=>{const o=[];for(const s of String(p).split('/')){if(s==='..')o.pop();else if(s&&s!=='.')o.push(s)}return o.join('/')};
+const deb=(f,ms)=>{let t;return()=>{clearTimeout(t);t=setTimeout(f,typeof ms==='function'?ms():ms)}};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)};
+const cfg=Object.assign({auto:true,delay:800,font:14,same:true,wrap:true,kbzen:true,sp:.5},JSON.parse(localStorage.getItem('nc:cfg')||'{}'));
+const applyCfg=(sv=1)=>{if(sv)localStorage.setItem('nc:cfg',JSON.stringify(cfg));const r=document.documentElement.style;r.setProperty('--fs',cfg.font+'px');r.setProperty('--lh',Math.round(cfg.font*1.55)+'px');r.setProperty('--sp',(cfg.sp*100)+'%');document.body.classList.toggle('nw',!cfg.wrap);try{zen()}catch(e){}};applyCfg();
+// ---------- IndexedDB ----------
+const db=await new Promise(ok=>{const r=indexedDB.open('nekostudio',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null)}).catch(()=>null);
+const tx=(m,f)=>new Promise((ok,no)=>{const t=db.transaction('p',m),r=f(t.objectStore('p'));t.oncomplete=()=>ok(r.result);t.onerror=()=>no(t.error)});
+const dbPut=p=>db?tx('readwrite',s=>s.put(p)):0,dbGet=id=>db?tx('readonly',s=>s.get(id)):0,dbAll=()=>db?tx('readonly',s=>s.getAll()):[],dbDel=id=>db?tx('readwrite',s=>s.delete(id)):0;
+// ---------- estado ----------
+let P,E,open=[],cur=null,curDir='',dirty=false,running=false,dev=0,map={},blobs=[],entryName='index.html',logs=[],filt='all',errs=0;
+const DEV=[['Fluido','100%'],['Celular','390px'],['Tablet','768px']];
+const sample=()=>({'index.html':{t:`<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Meu jogo</title>
+<link rel="stylesheet" href="style.css"></head>
+<body><canvas id="c"></canvas><div id="hud">Estrelas: 0</div>
+<script src="game.js"><\/script></body></html>`},'style.css':{t:`html,body{margin:0;height:100%;overflow:hidden;background:#0d0f1a;touch-action:none}
+canvas{display:block}
+#hud{position:absolute;top:10px;left:12px;color:#22d3ee;font:700 18px system-ui}`},'game.js':{t:`// Mova o quadrado roxo (toque/mouse) e pegue as estrelas.
+// Edite e veja o preview atualizar sozinho!
+const c=document.getElementById('c'),x=c.getContext('2d'),hud=document.getElementById('hud');
+let W,H,px=0,py=0,pts=+localStorage.getItem('best')||0,st={x:0,y:0};
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight;px=W/2;py=H/2}rs();onresize=rs;
+const nova=()=>{st.x=40+Math.random()*(W-80);st.y=40+Math.random()*(H-80)};nova();
+let tx=px,ty=py;
+onpointermove=onpointerdown=e=>{tx=e.clientX;ty=e.clientY};
+(function loop(){
+  px+=(tx-px)*.12;py+=(ty-py)*.12;
+  if(Math.hypot(px-st.x,py-st.y)<30){pts++;localStorage.setItem('best',pts);console.log('Estrela coletada! Total: '+pts);nova()}
+  x.fillStyle='#0d0f1a';x.fillRect(0,0,W,H);
+  x.fillStyle='#fbbf24';x.beginPath();x.arc(st.x,st.y,12,0,7);x.fill();
+  x.fillStyle='#a78bfa';x.fillRect(px-18,py-18,36,36);
+  hud.textContent='Estrelas: '+pts;requestAnimationFrame(loop);
+})();`}});
+const mk=(name,files)=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,files,dirs:[],upd:Date.now()});
+// ---------- editor (CodeMirror 6 via esm.sh, com fallback em textarea) ----------
+// ---------- editor próprio (sem CDN): realce de sintaxe incremental ----------
+const KW=new Set('async await break case catch class const continue debugger default delete do else export extends finally for from function get if import in instanceof let new of return set static super switch throw try typeof var void while with yield'.split(' ')),LT=new Set('true false null undefined NaN Infinity this'.split(' '));
+const sp=(c,t)=>c?`<i class=${c}>${esc(t)}</i>`:esc(t);
+const JR=/(\s+)|(\/\/.*)|(\/\*)|("(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?)|(`)|(\d[\w.]*)|([A-Za-z_$][\w$]*)|([^])/y,RX=/\/(?:[^\/\\\n\[]|\\.|\[(?:[^\]\\]|\\.)*\])+\/[a-z]*/y,TB=/(?:[^`\\]|\\.)*(`)?/y;
+function js(l,s){let o='',i=0,pv='',m;const N=l.length;
+ if(s==='c'){const j=l.indexOf('*/');if(j<0)return[sp('c',l),'c'];o=sp('c',l.slice(0,j+2));i=j+2;s=''}
+ else if(s==='b'){TB.lastIndex=0;m=TB.exec(l);o=sp('s',m[0]);i=m[0].length;s=m[1]?'':'b'}
+ while(i<N){JR.lastIndex=i;m=JR.exec(l);const t=m[0];i+=t.length;
+  if(m[1])o+=t;
+  else if(m[2])o+=sp('c',t);
+  else if(m[3]){const j=l.indexOf('*/',i);if(j<0)return[o+sp('c',l.slice(i-2)),'c'];o+=sp('c',l.slice(i-2,j+2));i=j+2}
+  else if(m[4]){o+=sp('s',t);pv='s'}
+  else if(m[5]){TB.lastIndex=i;const q=TB.exec(l);o+=sp('s','`'+q[0]);i+=q[0].length;if(!q[1])return[o,'b'];pv='s'}
+  else if(m[6]){o+=sp('n',t);pv='n'}
+  else if(m[7]){o+=sp(KW.has(t)?'k':LT.has(t)?'l':l[i]==='('?'f':pv==='.'?'a':/^[A-Z]/.test(t)?'t':'',t);pv=t}
+  else if(t==='/'&&(pv===''||pv==='return'||/^[(,=:\[!&|?{};+\-*%<>~^]$/.test(pv))&&(RX.lastIndex=i-1,(m=RX.exec(l)))){o+=sp('r',m[0]);i+=m[0].length-1;pv='r'}
+  else{o+=esc(t);pv=t}
+ }
+ return[o,s]}
+const CR=/(\s+)|(\/\*)|("(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?)|(@[\w-]+)|([.#][\w-]+)|(::?[\w-]+)|(!\s*important)|(-?\d*\.?\d+[a-z%]*)|(-*[A-Za-z_][\w-]*)|([^])/y;
+function css(l,s){let cm=s[0]==='c',d=+s.replace('c','')||0,o='',i=0,m,val=0,sel=!d||/^[^;{}]*\{/.test(l);const N=l.length,out=()=>[o,(cm?'c':'')+(d||'')];
+ if(cm){const j=l.indexOf('*/');if(j<0)return[sp('c',l),s];o=sp('c',l.slice(0,j+2));i=j+2;cm=false}
+ while(i<N){CR.lastIndex=i;m=CR.exec(l);const t=m[0];i+=t.length;
+  if(m[1])o+=t;
+  else if(m[2]){const j=l.indexOf('*/',i);if(j<0){o+=sp('c',l.slice(i-2));cm=true;return out()}o+=sp('c',l.slice(i-2,j+2));i=j+2}
+  else if(m[3])o+=sp('s',t);
+  else if(m[4])o+=sp('k',t);
+  else if(m[5])o+=sp(t[0]==='#'&&!sel?'n':'t',t);
+  else if(m[6]){if(sel)o+=sp('k',t);else{o+=':';i-=t.length-1;val=1}}
+  else if(m[7])o+=sp('k',t);
+  else if(m[8])o+=sp(sel?'':'n',t);
+  else if(m[9])o+=sp(sel?'g':!val&&/^\s*:/.test(l.slice(i,i+4))?'a':l[i]==='('?'f':'',t);
+  else{o+=esc(t);if(t==='{'){d++;sel=false}else if(t==='}'){d=Math.max(0,d-1);sel=!d||/^[^;{}]*\{/.test(l.slice(i))}else if(t===';')val=0}
+ }
+ return out()}
+const TG=/(\s+)|(\/?>)|([^\s"'=<>\/]+)|(=)|("[^"]*"?|'[^']*'?)|([^])/y;
+function html(l,s){let o='',i=0,m,eq=0;const N=l.length;
+ while(i<N){const c=s[0];
+  if(c==='S'||c==='Y'){const j=l.toLowerCase().indexOf(c==='S'?'</script':'</style',i),r=(c==='S'?js:css)(l.slice(i,j<0?N:j),s.slice(1));o+=r[0];if(j<0)return[o,c+r[1]];i=j;s=''}
+  else if(c==='!'){const j=l.indexOf('-->',i);if(j<0)return[o+sp('c',l.slice(i)),'!'];o+=sp('c',l.slice(i,j+3));i=j+3;s=''}
+  else if(c==='<'){const k=s[1],q=s[2];
+   if(q){const j=l.indexOf(q,i);if(j<0)return[o+sp('s',l.slice(i)),s];o+=sp('s',l.slice(i,j+1));i=j+1;s='<'+k;continue}
+   TG.lastIndex=i;m=TG.exec(l);const t=m[0];i+=t.length;
+   if(m[1])o+=t;
+   else if(m[2]){o+=sp('g',t);s=k==='1'?'S':k==='2'?'Y':'';eq=0}
+   else if(m[3]){o+=sp(eq?'s':'a',t);eq=0}
+   else if(m[4]){o+='=';eq=1}
+   else if(m[5]){const u=t.length>1&&t[t.length-1]===t[0];o+=sp('s',t);eq=0;if(!u)return[o,'<'+k+t[0]]}
+   else o+=esc(t)}
+  else{const j=l.indexOf('<',i);if(j<0){o+=esc(l.slice(i));break}
+   o+=esc(l.slice(i,j));i=j;
+   if(l.startsWith('<!--',i)){s='!';continue}
+   const g=l.slice(i,i+90);
+   if(g[1]==='!'){const e=l.indexOf('>',i),t=l.slice(i,e<0?N:e+1);o+=sp('m',t);i+=t.length}
+   else if(g[1]==='/'){const t=/^<\/[\w:-]*\s*>?/.exec(g)[0];o+=sp('g',t);i+=t.length}
+   else{const t=(/^<[A-Za-z][\w:-]*/.exec(g)||[''])[0];if(t){o+=sp('g',t);i+=t.length;const n=t.slice(1).toLowerCase();s='<'+(n==='script'?1:n==='style'?2:0)}else{o+='&lt;';i++}}}
+ }
+ return[o,s]}
+function makeEditor(host){
+ host.innerHTML='<div id="sc"><div id="cw"><div id="pre"></div><textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor de código"></textarea></div></div>';
+ const sc=$('#sc'),cw=$('#cw'),pre=$('#pre'),ta=$('#ta'),fb=$('#fb'),xk=$('#xk'),mem={},LG={html,htm:html,svg:html,xml:html,css,js,mjs:js,json:js},VOID=/^(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)$/i;
+ let lines=[''],st=[''],els=[],fn=null,busy=0;
+ const L=h=>{const d=document.createElement('div');d.className='L';d.innerHTML=h;return d},gw=()=>cw.style.setProperty('--gw','calc('+Math.max(2,String(lines.length).length)+'ch + 18px)'),line=i=>ta.value.slice(0,i).split('\n').length-1;
+ function setDoc(t){lines=t.split('\n');st=[];let s='';const h=[];for(let i=0;i<lines.length;i++){st[i]=s;const r=fn?fn(lines[i],s):[esc(lines[i]),''];h[i]='<div class=L>'+r[0]+'</div>';s=r[1]}pre.innerHTML=h.join('');els=[...pre.children];gw()}
+ function edit(){const nl=ta.value.split('\n'),ol=lines,os=st,oe=els;let p=0,a=ol.length,b=nl.length;const n=Math.min(a,b);
+  while(p<n&&nl[p]===ol[p])p++;
+  while(a>p&&b>p&&ol[a-1]===nl[b-1]){a--;b--}
+  const f=fn||(x=>[esc(x),'']),ns=os.slice(0,p),nh=[];let s=os[p]||'',i=p;
+  for(;i<nl.length;i++){if(i>=b&&os[i-b+a]===s)break;ns[i]=s;const r=f(nl[i],s);nh[i-p]=r[0];s=r[1]}
+  for(let k=i;k<nl.length;k++)ns[k]=os[k-b+a];
+  const fr=document.createDocumentFragment(),ne=[];for(let k=p;k<b;k++){const d=L(nh[k-p]);ne.push(d);fr.append(d)}
+  const nx=oe[a]||null;for(let k=p;k<a;k++)oe[k].remove();pre.insertBefore(fr,nx);
+  els=oe.slice(0,p).concat(ne,oe.slice(a));for(let k=b;k<i;k++)els[k].innerHTML=nh[k-p];
+  lines=nl;st=ns;gw();onEdit()}
+ function ins(t,back=0){ta.focus();if(!document.execCommand('insertText',false,t)){ta.setRangeText(t,ta.selectionStart,ta.selectionEnd,'end');edit()}if(back){const p=ta.selectionStart-back;ta.setSelectionRange(p,p)}}
+ function rv(){const e=els[line(ta.selectionStart)];if(!e)return;const t=e.offsetTop,h=e.offsetHeight,v=sc.clientHeight;if(t<sc.scrollTop+4)sc.scrollTop=Math.max(0,t-4);else if(t+h>sc.scrollTop+v-24)sc.scrollTop=t+h-v+24}
+ function tab(back){const v=ta.value,s=ta.selectionStart,e=ta.selectionEnd;if(s===e&&!back){ins('  ');return}
+  const ls=v.lastIndexOf('\n',s-1)+1,nt=v.slice(ls,e).split('\n').map(x=>back?x.replace(/^( {1,2}|\t)/,''):'  '+x).join('\n');ta.setSelectionRange(ls,e);ins(nt);ta.setSelectionRange(ls,ls+nt.length)}
+ function enter(){const v=ta.value,s=ta.selectionStart,ind=/^[ \t]*/.exec(v.slice(v.lastIndexOf('\n',s-1)+1,s))[0],a=v[s-1],b=v[s],o='{(['.indexOf(a||'x');
+  if((o>=0&&b==='})]'[o])||(a==='>'&&b==='<'&&v[s+1]==='/'))ins('\n'+ind+'  \n'+ind,ind.length+1);else ins('\n'+ind+(o>=0?'  ':''))}
+ function auto(e){const d=e.data;if(e.inputType!=='insertText'||!d||d.length!==1||ta.selectionStart!==ta.selectionEnd)return;
+  const v=ta.value,p=ta.selectionStart,nx=v[p]||'',pv=v[p-2]||'';
+  if(')]}"\'`'.includes(d)&&nx===d){document.execCommand('forwardDelete');return}
+  if(d==='>'){if(fn!==html)return;const mt=/<([A-Za-z][\w:-]*)(?:\s[^<>]*)?>$/.exec(v.slice(Math.max(0,p-300),p));if(mt&&!VOID.test(mt[1])&&pv!=='/')ins('</'+mt[1]+'>',mt[1].length+3);return}
+  const c={'(':')','[':']','{':'}','"':'"',"'":"'",'`':'`'}[d];
+  if(c&&(!nx||/[\s)\]}>;,.]/.test(nx))&&!('"\'`'.includes(d)&&/[\w$]/.test(pv)))ins(c,1)}
+ ta.addEventListener('input',e=>{edit();requestAnimationFrame(rv);auto(e);sug()});ta.addEventListener('blur',()=>setTimeout(()=>{ac.innerHTML=''},200));
+ ta.addEventListener('beforeinput',e=>{if(!busy&&(e.inputType==='insertLineBreak'||e.inputType==='insertParagraph')){e.preventDefault();busy=1;try{enter()}finally{busy=0}}});
+ ta.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();tab(e.shiftKey)}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();fbar(1)}});
+ ta.addEventListener('keyup',rv);ta.onscroll=()=>{ta.scrollTop=0;ta.scrollLeft=0};
+ // barra de símbolos (aparece com o teclado)
+ ['⇥','↶','↷','{}','()','[]','<>',';','"',"'",'=','/','!','&','|','`','$','.','🔍'].forEach(k=>{const b=document.createElement('button');b.textContent=k;
+  b.onclick=()=>{k==='⇥'?tab(0):k==='↶'?document.execCommand('undo'):k==='↷'?document.execCommand('redo'):k==='🔍'?fbar(1):ins(k,k.length===2?1:0)};xk.append(b)});
+ xk.onpointerdown=xk.onmousedown=e=>e.preventDefault();
+ // buscar / trocar
+ fb.innerHTML='<input id="fq" placeholder="Buscar" autocomplete="off"><input id="fp" placeholder="Trocar por" autocomplete="off"><button data-a="p">▲</button><button data-a="n">▼</button><button data-a="r">Trocar</button><button data-a="a">Todas</button><button data-a="x">✕</button><small id="fc"></small>';
+ const fq=$('#fq'),fp=$('#fp'),fc=$('#fc');
+ function go(d){const q=fq.value.toLowerCase();if(!q){fc.textContent='';return}const v=ta.value.toLowerCase();let i=d>0?v.indexOf(q,ta.selectionEnd):v.lastIndexOf(q,ta.selectionStart-1);if(i<0)i=d>0?v.indexOf(q):v.lastIndexOf(q);
+  if(i<0){fc.textContent='0 resultados';return}ta.setSelectionRange(i,i+q.length);const e=els[line(i)];if(e)sc.scrollTop=Math.max(0,e.offsetTop-sc.clientHeight/3);fc.textContent=(v.split(q).length-1)+' resultados'}
+ function fbar(on){fb.classList.toggle('on',!!on);if(on){const s=ta.value.slice(ta.selectionStart,ta.selectionEnd);if(s&&s.length<60&&!s.includes('\n'))fq.value=s;fq.focus();fq.select()}else ta.focus()}
+ fb.onclick=e=>{const a=e.target.dataset.a;if(!a)return;if(a==='x')fbar(0);else if(a==='n')go(1);else if(a==='p')go(-1);
+  else if(a==='r'){if(fq.value&&ta.value.slice(ta.selectionStart,ta.selectionEnd).toLowerCase()===fq.value.toLowerCase())ins(fp.value);go(1)}
+  else if(a==='a'&&fq.value){const re=new RegExp(fq.value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),n=(ta.value.match(re)||[]).length;ta.select();ins(ta.value.replace(re,()=>fp.value));fc.textContent=n+' trocados'}};
+ fq.onkeydown=e=>{if(e.key==='Enter')go(1)};fq.oninput=()=>{ta.setSelectionRange(ta.selectionStart,ta.selectionStart);go(1)};
+ // autocompletar: sugestões em botões abaixo do editor
+ const ac=$('#ac'),WL={js:'async await break case catch class const continue default document window console log warn error else export extends false finally for function if import let new null return switch this throw true try typeof undefined var while yield addEventListener removeEventListener querySelector querySelectorAll getElementById createElement appendChild classList innerHTML textContent requestAnimationFrame localStorage getItem setItem setTimeout setInterval clearInterval clearTimeout JSON stringify parse Math random floor ceil round sqrt abs sin cos atan2 Date now Promise fetch then Array isArray forEach map filter reduce push pop splice slice includes indexOf length Object keys values entries assign BABYLON Engine Scene Vector3 Vector2 Color3 Color4 Matrix Quaternion MeshBuilder CreateBox CreateSphere CreateGround CreateCylinder CreatePlane StandardMaterial PBRMaterial Texture DynamicTexture ArcRotateCamera FreeCamera UniversalCamera HemisphericLight DirectionalLight PointLight ShadowGenerator ParticleSystem SceneLoader ImportMeshAsync Animation ActionManager Ray PhysicsImpostor AdvancedDynamicTexture runRenderLoop registerBeforeRender onBeforeRenderObservable diffuseColor emissiveColor specularColor position rotation scaling dispose setEnabled isVisible material parent getEngine getDeltaTime attachControl clearColor'.split(' '),
+ css:'align-items align-content animation aspect-ratio background background-color background-image border border-radius bottom box-shadow box-sizing color cursor display filter flex flex-direction flex-wrap flex-grow font font-family font-size font-weight gap grid grid-template-columns height inset justify-content left letter-spacing line-height margin max-height max-width min-height min-width object-fit opacity outline overflow overflow-x overflow-y padding pointer-events position right text-align text-shadow text-transform top touch-action transform transition user-select visibility white-space width z-index backdrop-filter linear-gradient radial-gradient rgba translate rotate scale calc var none auto center absolute relative fixed hidden solid pointer important'.split(' '),
+ html:'div span canvas script style link meta title head body button input label section header footer main nav ul ol li img h1 h2 h3 p a textarea select option table tr td form video audio svg iframe class id src href type name value placeholder onclick width height rel charset content viewport'.split(' ')};
+ let noac=0;const wre=()=>!fn||fn===js?/[\w$]*$/:/[\w$-]*$/;
+ function sug(){ac.innerHTML='';if(noac||ta.selectionStart!==ta.selectionEnd)return;const p=ta.selectionStart,v=ta.value,w=wre().exec(v.slice(Math.max(0,p-40),p))[0];
+  if(w.length<2||/^\d/.test(w))return;const lw=w.toLowerCase(),seen=new Set([w]),out=[],add=x=>{if(out.length<9&&!seen.has(x)&&x.toLowerCase().startsWith(lw)){seen.add(x);out.push(x)}};
+  (v.match(!fn||fn===js?/[A-Za-z_$][\w$]{2,}/g:/[A-Za-z_$][\w$-]{2,}/g)||[]).forEach(add);WL[fn===html?'html':fn===css?'css':'js'].forEach(add);
+  ac.innerHTML=out.map(x=>`<button>${esc(x)}</button>`).join('')}
+ ac.onpointerdown=ac.onmousedown=e=>e.preventDefault();
+ ac.onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=ta.selectionStart,w=wre().exec(ta.value.slice(Math.max(0,p-40),p))[0];noac=1;ta.setSelectionRange(p-w.length,p);ins(b.textContent);noac=0;ac.innerHTML=''};
+ return{cur:null,
+  open(p,t){if(this.cur)mem[this.cur]={y:sc.scrollTop,s:ta.selectionStart,e:ta.selectionEnd};this.cur=p;fn=LG[p.split('.').pop().toLowerCase()]||null;ta.readOnly=!p;ta.value=t;setDoc(ta.value);const m=mem[p]||{y:0,s:0,e:0};sc.scrollTop=m.y;try{ta.setSelectionRange(m.s,m.e)}catch(e){}},
+  get:()=>ta.value,focus:()=>ta.focus(),find:()=>fbar(1),reset(){for(const k in mem)delete mem[k];this.cur=null}}
+}
+
+// ---------- salvar ----------
+async function save(){if(!P)return;P.upd=Date.now();try{await dbPut(P);dirty=false}catch(e){toast('Erro ao salvar: '+e.message)}ui()}
+const save$=deb(save,600),run$=deb(()=>run(),()=>cfg.delay);
+function ui(){$('#pt').textContent=P.name;const s=$('#st');s.textContent=(dirty?'● não salvo':'✓')+(running?' ▶':'');s.className=dirty?'w':''}
+function onEdit(){if(!cur||!P.files[cur])return;P.files[cur].t=E.get();dirty=true;ui();save$();if(cfg.auto)run$()}
+// ---------- arquivos / abas ----------
+function openFile(p){const f=P.files[p];if(!f)return;if(!('t' in f))return toast('Arquivo binário: não editável aqui');if(!open.includes(p))open.push(p);cur=p;E.open(p,f.t);tabs();tree()}
+function tabs(){$('#tabs').innerHTML=open.map(p=>`<div class="tab${p===cur?' act':''}" data-p="${esc(p)}">${esc(p.split('/').pop())}<b data-x>×</b></div>`).join('')}
+$('#tabs').onclick=e=>{const t=e.target.closest('.tab');if(!t)return;const p=t.dataset.p;
+ if(e.target.dataset.x!==undefined){open=open.filter(k=>k!==p);if(cur===p){const n=open[open.length-1];if(n)openFile(n);else{cur=null;E.open('','');tabs();tree()}}else tabs()}else openFile(p)};
+function tree(){const ds=new Set(P.dirs),fs=Object.keys(P.files);fs.forEach(p=>{const a=p.split('/');a.pop();while(a.length){ds.add(a.join('/'));a.pop()}});
+ const it=[...[...ds].map(d=>d+'/'),...fs].sort();
+ $('#tr').innerHTML=it.map(p=>{const dir=p.endsWith('/'),q=dir?p.slice(0,-1):p,n=q.split('/'),nm=n.pop();
+  return`<div class="row${p===cur?' act':''}${dir&&q===curDir?' sel':''}" data-p="${esc(q)}" data-d="${dir?1:0}" style="padding-left:${10+n.length*16}px"><span class="n">${dir?'📁':'📄'} ${esc(nm)}</span><button data-a="r">✎</button><button data-a="x">🗑</button></div>`}).join('')||'<p class="mu">Projeto vazio</p>'}
+function touch(){open=open.filter(k=>P.files[k]);E.reset();const c=P.files[cur]?cur:open[open.length-1];dirty=true;save$();
+ if(c)openFile(c);else{cur=null;E.open('','');tabs();tree()}ui();if(cfg.auto)run$()}
+$('#tr').onclick=e=>{const r=e.target.closest('.row');if(!r)return;const p=r.dataset.p,d=r.dataset.d==='1',a=e.target.closest('button')?.dataset.a;
+ if(a==='r'){const n=norm(prompt('Novo caminho:',p)||'');if(!n||n===p)return;const mv=k=>d?(k===p||k.startsWith(p+'/')?n+k.slice(p.length):k):(k===p?n:k);
+  const nf={};for(const k in P.files)nf[mv(k)]=P.files[k];P.files=nf;P.dirs=P.dirs.map(mv);open=open.map(mv);cur=cur&&mv(cur);return touch()}
+ if(a==='x'){if(!confirm('Excluir "'+p+'"?'))return;for(const k in P.files)if(k===p||(d&&k.startsWith(p+'/')))delete P.files[k];P.dirs=P.dirs.filter(x=>x!==p&&!x.startsWith(p+'/'));return touch()}
+ if(d){curDir=curDir===p?'':p;tree()}else{openFile(p);document.body.classList.remove('dro')}};
+$('#nf').onclick=()=>{const p=norm(prompt('Nome do arquivo (ex: js/main.js):',curDir?curDir+'/':'')||'');if(!p)return;if(P.files[p])return toast('Já existe');P.files[p]={t:''};open.push(p);cur=p;touch()};
+$('#nd').onclick=()=>{const p=norm(prompt('Nome da pasta:',curDir?curDir+'/':'')||'');if(!p)return;P.dirs.push(p);touch()};
+$('#bf').onclick=()=>document.body.classList.add('dro');$('#bk').onclick=()=>document.body.classList.remove('dro');
+// ---------- live preview ----------
+const BR=`(function(){var P=parent,s=function(l,a){try{P.postMessage({nc:1,l:l,a:a},'*')}catch(e){}};
+function f(x){if(x instanceof Error)return x.stack||x.message;if(typeof x=='object'&&x)try{return JSON.stringify(x)}catch(e){}return String(x)}
+['log','info','warn','error','debug'].forEach(function(k){var o=console[k];console[k]=function(){s(k,[].map.call(arguments,f));o.apply(console,arguments)}});
+addEventListener('error',function(e){if(e.target&&e.target!==window){var u=e.target.src||e.target.href||'';if(u.indexOf('//localhost')>-1||u.indexOf('//127.0.0.1')>-1||u.indexOf('//10.0.2.2')>-1)s('warn',['Servidor local indisponível no editor (existe só no APK): '+u+' — o jogo deve usar o plano B (CDN).']);else s('error',['Falha ao carregar: '+u]);return}s('error',[e.message+' ('+(e.filename||'')+':'+e.lineno+':'+e.colno+')'])},true);
+addEventListener('unhandledrejection',function(e){s('error',['Promise rejeitada: '+f(e.reason)])});
+try{localStorage.getItem('x')}catch(e){var m={};Object.defineProperty(window,'localStorage',{value:{getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}}}})}})();`.replace(/\n/g,'');
+function blobUrl(path){const f=P.files[norm(path.split(/[?#]/)[0])];if(!f)return null;const b=f.b||new Blob([f.t],{type:mime(path)}),u=URL.createObjectURL(b);blobs.push(u);map[u]=path;return u}
+function build(){
+ const en=P.files['index.html']?'index.html':Object.keys(P.files).find(k=>/\.html?$/i.test(k)&&'t' in P.files[k]);if(!en)return null;entryName=en;
+ const d=new DOMParser().parseFromString(P.files[en].t,'text/html'),dir=en.replace(/[^/]*$/,'');
+ d.querySelectorAll('[src],link[href]').forEach(el=>{const a=el.hasAttribute('src')?'src':'href',v=el.getAttribute(a),lm=/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/([^?#]+)/i.exec(v||'');if(lm){const u=blobUrl(lm[1]);if(u)el.setAttribute(a,u);return}if(!v||/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(v))return;const u=blobUrl(v.startsWith('/')?v:dir+v);if(u)el.setAttribute(a,u)});
+ const s=d.createElement('script');s.textContent=BR;d.head.prepend(s);return'<!DOCTYPE html>'+d.documentElement.outerHTML}
+function run(){
+ blobs.forEach(URL.revokeObjectURL);blobs=[];map={};logs=[];errs=0;drawLog();
+ const h=build(),old=$('#fr');if(h==null){running=false;ui();return log('warn','Nenhum arquivo HTML no projeto.')}
+ const f=document.createElement('iframe');f.id='fr';f.title='Preview';f.allowFullscreen=true;f.allow='fullscreen;autoplay;gamepad;accelerometer;gyroscope;clipboard-write';
+ f.sandbox='allow-scripts allow-forms allow-modals allow-popups allow-pointer-lock'+(cfg.same?' allow-same-origin':'');f.srcdoc=h;old.replaceWith(f);
+ running=true;ui();log('sys','▶ Executando '+entryName)}
+addEventListener('message',e=>{const d=e.data;if(!d||!d.nc||e.source!==$('#fr').contentWindow)return;let t=d.a.join(' ');for(const u in map)t=t.split(u).join(map[u]);log(d.l,t.replace(/about:srcdoc/g,entryName))});
+$('#br').onclick=$('#rr').onclick=$('#zr').onclick=()=>{run();if($('#app').dataset.mode==='editor')setMode('split')};
+$('#dv').onclick=()=>{dev=(dev+1)%3;$('#dv').textContent=DEV[dev][0];$('#stage').style.setProperty('--fw',DEV[dev][1])};
+$('#fs').onclick=()=>$('#pv').classList.toggle('full');
+// ---------- console ----------
+let raf=0;
+function log(l,t){logs.push({l,t});if(logs.length>500)logs.shift();if(l==='error')errs++;drawLog()}
+function drawLog(){raf||(raf=requestAnimationFrame(()=>{raf=0;const lg=$('#lg'),b=lg.scrollTop+lg.clientHeight>=lg.scrollHeight-30;
+ lg.innerHTML=logs.filter(x=>filt==='all'||x.l===filt||x.l==='sys').map(x=>`<div class="l-${x.l}">${esc(x.t)}</div>`).join('');if(b)lg.scrollTop=lg.scrollHeight;$('#eb').textContent=errs||''}))}
+$('#bc').onclick=()=>$('#con').classList.toggle('open');$('#cx').onclick=()=>$('#con').classList.remove('open');
+$('#cc').onclick=()=>{logs=[];errs=0;drawLog()};
+$('#con').onclick=e=>{const f=e.target.dataset.f;if(!f)return;filt=f;document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===f));drawLog()};
+// ---------- modos ----------
+function setMode(m){$('#app').dataset.mode=m;$('#zm').textContent={editor:'✏️',split:'◧',preview:'▶️'}[m];document.querySelectorAll('nav [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===m))}
+document.querySelectorAll('nav [data-m]').forEach(b=>b.onclick=()=>setMode(b.dataset.m));setMode('split');
+let zm=false,kb=false,H0=0;
+const zen=()=>document.body.classList.toggle('zen',zm||(cfg.kbzen&&kb)),vv=window.visualViewport||{height:innerHeight,addEventListener(){}},
+fit=()=>{const f=/^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName);if(!f||!H0)H0=vv.height;kb=f&&vv.height<H0-120;document.documentElement.style.setProperty('--vh',vv.height+'px');document.body.classList.toggle('kb',kb);zen()};
+vv.addEventListener('resize',fit);addEventListener('focusin',()=>setTimeout(fit,350));addEventListener('focusout',()=>setTimeout(fit,350));fit();
+$('#bz').onclick=()=>{zm=true;zen()};
+$('#zx').onclick=()=>{zm=false;kb=false;document.activeElement.blur();zen();setTimeout(fit,400)};
+const MD=['editor','split','preview'];$('#zm').onclick=()=>setMode(MD[(MD.indexOf($('#app').dataset.mode)+1)%3]);
+// divisor arrastável entre código e preview
+const dvd=$('#dvd');let dg=0;
+dvd.onpointerdown=e=>{dg=1;dvd.setPointerCapture(e.pointerId);document.body.classList.add('dg')};
+dvd.onpointermove=e=>{if(!dg)return;const r=$('#main').getBoundingClientRect(),row=matchMedia('(min-aspect-ratio:1/1)').matches;cfg.sp=Math.min(.88,Math.max(.1,row?(e.clientX-r.left-11)/r.width:(e.clientY-r.top-11)/r.height));applyCfg(0)};
+dvd.onpointerup=dvd.onpointercancel=()=>{dg=0;document.body.classList.remove('dg');applyCfg()};
+dvd.ondblclick=()=>{cfg.sp=.5;applyCfg()};
+// ---------- projetos, importar, exportar ----------
+async function load(p){P=p;P.dirs=P.dirs||[];open=[];cur=null;curDir='';E.reset();localStorage.setItem('nc:last',P.id);
+ const t=k=>'t' in P.files[k],e=P.files['index.html']&&t('index.html')?'index.html':Object.keys(P.files).find(k=>/\.html?$/i.test(k)&&t(k))||Object.keys(P.files).find(t);
+ if(e)openFile(e);else{E.open('','');tabs();tree()}ui();run()}
+async function newProject(name,files){const p=mk(name,files);await dbPut(p);await load(p)}
+let zipP;const loadZip=()=>zipP||(zipP=new Promise((ok,no)=>{if(window.JSZip)return ok(JSZip);const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=()=>ok(JSZip);s.onerror=()=>{zipP=0;no(new Error('Sem internet para carregar o JSZip'))};document.head.append(s)}));
+const dl=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
+async function addFiles(list,np){
+ try{const it=[];for(const f of list){if(/\.zip$/i.test(f.name)){const z=await(await loadZip()).loadAsync(f);for(const[n,e]of Object.entries(z.files))if(!e.dir&&!/^__MACOSX/.test(n))it.push({p:n,b:await e.async('blob')})}else it.push({p:f.webkitRelativePath||f.name,b:f})}
+ if(!it.length)return;const ps=it.map(i=>norm(i.p)),r=ps[0].split('/')[0];if(ps.every(p=>p.includes('/')&&p.split('/')[0]===r))ps.forEach((p,i)=>ps[i]=p.slice(r.length+1));
+ const files={};for(let i=0;i<it.length;i++)files[ps[i]]=TXT.test(ps[i])?{t:await it[i].b.text()}:{b:it[i].b};
+ if(np)await newProject(list[0].name.replace(/\.[^.]+$/,'')||'Projeto',files);else{Object.assign(P.files,files);touch();run();toast(it.length+' arquivo(s) importado(s)')}
+ }catch(e){toast('Erro ao importar: '+e.message)}}
+$('#fi').onchange=$('#fd').onchange=e=>{addFiles([...e.target.files],e.target.dataset.np==='1');e.target.value=''};
+const pick=(id,np)=>{const i=$(id);i.dataset.np=np?1:0;i.click()};
+async function exportZip(){try{const Z=await loadZip(),z=new Z();for(const p in P.files){const f=P.files[p];z.file(p,'t' in f?f.t:f.b)}P.dirs.forEach(d=>z.folder(d));dl(await z.generateAsync({type:'blob'}),P.name+'.zip')}catch(e){toast(e.message)}}
+const D=$('#dlg');
+function dlg(t,h,on){D.innerHTML=`<div class="dh"><b>${t}</b><button data-c>✕</button></div><div class="db">${h}</div>`;
+ D.onclick=e=>{const b=e.target.closest('[data-c],[data-do]');if(e.target===D||(b&&b.hasAttribute('data-c')))D.close();else if(b&&on)on(b.dataset.do)};D.onchange=e=>on&&on('chg',e.target);if(!D.open)D.showModal()}
+async function projetos(){const l=(await dbAll()).sort((a,b)=>b.upd-a.upd);
+ dlg('Projetos',`<button class="pri" data-do="ex">＋ Novo projeto de exemplo</button><button data-do="em">＋ Novo projeto vazio</button><button data-do="im">⬆ Importar como novo projeto (HTML, ZIP…)</button><button data-do="ip">⬆ Importar pasta como novo projeto</button>`+
+  l.map(p=>`<div class="pr"><button data-do="o:${p.id}">${esc(p.name)}<br><small>${new Date(p.upd).toLocaleString('pt-BR')}${p.id===P.id?' · aberto':''}</small></button><button data-do="d:${p.id}">🗑</button></div>`).join(''),
+ async a=>{const[k,id]=a.split(':');
+  if(k==='ex'){D.close();await newProject('Jogo de exemplo',sample())}
+  else if(k==='em'){const n=prompt('Nome do projeto:','Novo projeto');if(n){D.close();await newProject(n,{'index.html':{t:'<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>'+esc(n)+'</title></head>\n<body>\n\n</body></html>'}})}}
+  else if(k==='im'){D.close();pick('#fi',1)}else if(k==='ip'){D.close();pick('#fd',1)}
+  else if(k==='o'){D.close();await save();await load(await dbGet(id))}
+  else if(k==='d'){if(!confirm('Excluir este projeto?'))return;await dbDel(id);if(id===P.id){D.close();const r=(await dbAll())[0];await(r?load(r):newProject('Jogo de exemplo',sample()))}else projetos()}})}
+$('#pn').onclick=projetos;
+function menu(){dlg('Menu',`<button data-do="s">💾 Salvar agora</button><button data-do="f">🔍 Buscar / substituir</button><button data-do="i">⬆ Importar arquivos / ZIP</button><button data-do="ip">⬆ Importar pasta</button><button data-do="z">⬇ Exportar projeto (ZIP)</button><button data-do="a">⬇ Exportar arquivo atual</button><button data-do="g">🐙 GitHub: enviar / baixar</button><button data-do="r">✎ Renomear projeto</button><button data-do="c">⚙ Configurações</button><button data-do="u">🔄 Verificar atualização</button><button data-do="h">❓ Ajuda</button><small>Versão ${APP_V} · ${esc(localStorage.getItem('nekoCodeMsg')||'aberto direto (sem atualização automática)')}</small>`,async a=>{D.close();
+  if(a==='s'){await save();toast('Salvo')}else if(a==='f')E.find();else if(a==='i')pick('#fi',0);else if(a==='ip')pick('#fd',0);else if(a==='z')exportZip();
+  else if(a==='a'&&cur)dl(new Blob([P.files[cur].t],{type:mime(cur)}),cur.split('/').pop());
+  else if(a==='r'){const n=prompt('Nome do projeto:',P.name);if(n){P.name=n;dirty=true;save();}}else if(a==='c')config();else if(a==='g')github();else if(a==='h')ajuda();else if(a==='u')location.reload()})}
+$('#bm').onclick=menu;
+function config(){dlg('Configurações',`<label>Atualizar preview automaticamente<input type="checkbox" data-k="auto" ${cfg.auto?'checked':''}></label><label>Atraso (ms)<input type="number" data-k="delay" min="200" max="5000" step="100" value="${cfg.delay}"></label><label>Quebrar linhas longas<input type="checkbox" data-k="wrap" ${cfg.wrap?'checked':''}></label><label>Modo foco automático com o teclado<input type="checkbox" data-k="kbzen" ${cfg.kbzen?'checked':''}></label><label>Tamanho da fonte<input type="number" data-k="font" min="10" max="24" value="${cfg.font}"></label><label>Permitir localStorage no jogo (same-origin)<input type="checkbox" data-k="same" ${cfg.same?'checked':''}></label><small>Link de atualização automática (arquivo no GitHub Pages)</small><input data-u="1" placeholder="https://usuario.github.io/repo/index.html" value="${esc(localStorage.getItem('nekoCodeURL')||'')}" autocomplete="off"><small>Same-origin é necessário para jogos que usam localStorage/IndexedDB (como o Neko Tower), mas dá ao código do projeto acesso aos dados do editor. Desligue para rodar código de terceiros. Vale na próxima execução.</small>`,(a,el)=>{if(a!=='chg')return;if(el.dataset.u!==undefined){localStorage.setItem('nekoCodeURL',el.value.trim());return}cfg[el.dataset.k]=el.type==='checkbox'?el.checked:+el.value;applyCfg()})}
+function ajuda(){dlg('Ajuda',`<b>Live Preview</b><span>Edite e o preview recarrega sozinho após uma pausa na digitação. ▶ Rodar ou ↻ reinicia do zero.</span><b>Divisor</b><span>Na tela dividida, arraste a barra ••• para subir/descer (ou ir para o lado) cada tela. Toque duplo volta para 50/50.</span><b>Modo foco</b><span>⛶ Foco esconde todas as barras e deixa só código + preview. Ele liga sozinho quando o teclado abre (dá para desligar em ⚙). No canto superior direito ficam ▶ rodar, ◧ trocar modo e ✕ sair.</span><b>Barra de símbolos</b><span>Aparece junto do teclado: Tab, desfazer/refazer, { } ( ) [ ] &lt; &gt; ; " e busca. O editor também indenta sozinho e fecha parênteses, aspas e tags.</span><b>Neko Tower</b><span>Projetos → “Importar como novo projeto” → escolha o index.html. Avisos sobre localhost:7700 são normais: esse servidor existe só dentro do APK, e o jogo usa o plano B da CDN.</span><b>GitHub</b><span>Menu ⋯ → GitHub: cole o token uma vez (fica só neste celular), informe usuario/repo e toque em Enviar para fazer commit só dos arquivos que mudaram, ou em Baixar para abrir um repositório como novo projeto.</span><b>Autocompletar</b><span>Com 2+ letras aparecem sugestões em botões embaixo do editor (palavras do arquivo, JS/Babylon, CSS e tags). Toque para completar.</span><b>Atualização automática</b><span>No app (APK), ao abrir ele confere o link de atualização (⚙) e baixa a versão nova do GitHub Pages sozinho. Suba o novo arquivo como index.html e aumente o número APP_V. Se a versão nova falhar 2 vezes ao abrir, volta para a do APK.</span><b>Atalhos</b><span>Ctrl+S salvar · Ctrl+Enter executar · Ctrl+F buscar · Tab / Shift+Tab indentar.</span><b>Limitações</b><span>Scripts type="module" com import relativo entre arquivos não funcionam. Linhas de scripts inline são relativas ao HTML processado. Sem service worker, url() no CSS e fetch() de arquivos locais não enxergam o projeto.</span>`)}
+// ---------- GitHub (API REST direto do navegador, sem servidor) ----------
+const b64=u=>{let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)},gdir=d=>d?d.replace(/^\/+|\/+$/g,'')+'/':'';
+async function gh(path,o={}){const r=await fetch('https://api.github.com'+path,{method:o.m||'GET',headers:{Authorization:'Bearer '+localStorage.getItem('nc:tok'),Accept:'application/vnd.github+json','Content-Type':'application/json'},body:o.b?JSON.stringify(o.b):undefined}),j=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error((j.message||'HTTP '+r.status)+(r.status===401?' (token inválido)':r.status===404?' (repositório/branch não encontrado ou sem acesso)':''));return j}
+async function ghPush(msg,say){const{r,b,d}=P.gh,dir=gdir(d),te=new TextEncoder(),have={},ch=[];say('Lendo '+r+'@'+b+'…');
+ const ref=await gh(`/repos/${r}/git/ref/heads/${b}`),cm=await gh(`/repos/${r}/git/commits/${ref.object.sha}`),tr=await gh(`/repos/${r}/git/trees/${cm.tree.sha}?recursive=1`);
+ tr.tree.forEach(x=>have[x.path]=x.sha);
+ for(const p in P.files){const f=P.files[p],u='t' in f?te.encode(f.t):new Uint8Array(await f.b.arrayBuffer()),h=te.encode('blob '+u.length+'\0'),a=new Uint8Array(h.length+u.length);a.set(h);a.set(u,h.length);
+  const sha=[...new Uint8Array(await crypto.subtle.digest('SHA-1',a))].map(x=>x.toString(16).padStart(2,'0')).join('');if(have[dir+p]!==sha)ch.push({p:dir+p,u})}
+ if(!ch.length)return say('Nada para enviar: o repositório já está igual a este projeto.');
+ const it=[];for(const c of ch){say(`Enviando ${it.length+1}/${ch.length}: ${c.p}`);it.push({path:c.p,mode:'100644',type:'blob',sha:(await gh(`/repos/${r}/git/blobs`,{m:'POST',b:{content:b64(c.u),encoding:'base64'}})).sha})}
+ const nt=await gh(`/repos/${r}/git/trees`,{m:'POST',b:{base_tree:cm.tree.sha,tree:it}}),nc=await gh(`/repos/${r}/git/commits`,{m:'POST',b:{message:msg,tree:nt.sha,parents:[ref.object.sha]}});
+ await gh(`/repos/${r}/git/refs/heads/${b}`,{m:'PATCH',b:{sha:nc.sha}});say('✓ Commit enviado ('+ch.length+' arquivo(s)). No GitHub Pages, a publicação leva cerca de 1 minuto.')}
+async function ghPull(cf,say){const{r,b,d}=cf,dir=gdir(d);say('Lendo '+r+'@'+b+'…');
+ const fl=(await gh(`/repos/${r}/git/trees/${b}?recursive=1`)).tree.filter(x=>x.type==='blob'&&x.path.startsWith(dir)&&(x.size||0)<5e6);
+ if(!fl.length)throw new Error('Nenhum arquivo nessa pasta/branch');if(fl.length>200)throw new Error(fl.length+' arquivos: informe uma pasta menor');
+ const files={};let n=0;for(const x of fl){say(`Baixando ${++n}/${fl.length}`);const j=await gh(`/repos/${r}/git/blobs/${x.sha}`),u=Uint8Array.from(atob(j.content.replace(/\s/g,'')),c=>c.charCodeAt(0)),p=x.path.slice(dir.length);files[p]=TXT.test(p)?{t:new TextDecoder().decode(u)}:{b:new Blob([u],{type:mime(p)})}}
+ await newProject(r.split('/')[1],files);P.gh=cf;dirty=true;await save();say('✓ Projeto "'+P.name+'" criado com '+fl.length+' arquivo(s).')}
+function github(){const g=P.gh||{r:'',b:'main',d:''};
+ dlg('GitHub',`<small>Envie este projeto para um repositório (commit só dos arquivos que mudaram) ou baixe um repositório como novo projeto. O token fica guardado só neste celular e precisa de permissão de escrita em Contents.</small><input id="gt" type="password" placeholder="Token de acesso (ghp_… ou github_pat_…)" value="${esc(localStorage.getItem('nc:tok')||'')}" autocomplete="off"><input id="gr" placeholder="usuario/repositorio" value="${esc(g.r)}" autocomplete="off"><div class="rw"><input id="gb" placeholder="branch" value="${esc(g.b)}"><input id="gd" placeholder="pasta (opcional)" value="${esc(g.d)}"></div><input id="gm" placeholder="Mensagem do commit" value="Atualização pelo Neko Code Studio"><button class="pri" data-do="up">⬆ Enviar projeto</button><button data-do="dn">⬇ Baixar como novo projeto</button><div id="ghs" class="mu"></div>`,
+ async a=>{if(a!=='up'&&a!=='dn')return;const v=i=>$('#'+i).value.trim(),say=t=>{const e=$('#ghs');if(e)e.textContent=t},r=v('gr').replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,''),cf={r,b:v('gb')||'main',d:v('gd')};
+  if(!v('gt')||!/^[^\/\s]+\/[^\/\s]+$/.test(r))return say('Preencha o token e o repositório (usuario/repo).');
+  localStorage.setItem('nc:tok',v('gt'));try{if(a==='up'){P.gh=cf;dirty=true;await save();await ghPush(v('gm')||'Atualização',say)}else await ghPull(cf,say)}catch(e){say('Erro: '+e.message)}})}
+
+// ---------- atalhos e ciclo de vida ----------
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save().then(()=>toast('Salvo'))}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty)save()});
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+// ---------- boot ----------
+E=await makeEditor($('#ed'));
+const last=localStorage.getItem('nc:last');let p0=last?await dbGet(last).catch(()=>0):0;
+if(!p0){p0=mk('Jogo de exemplo',sample());await dbPut(p0)}
+await load(p0);
+try{localStorage.setItem('nekoCodeTry',0)}catch(e){}
+</script></body></html>
